@@ -24,6 +24,18 @@ Open http://localhost:5173. Vite proxies `/api` to Django on port 8000.
 
 If the frontend is hosted separately from Django, set `VITE_API_URL` to the API base before building, for example `VITE_API_URL=https://example.com/api npm run build`.
 
+## Docker Compose deployment
+
+The production compose setup runs Django, the built React frontend, and an Nginx reverse proxy. The proxy serves the frontend at `/` and forwards `/api/` to Django.
+
+```bash
+cp .env.example .env
+# Set DJANGO_SECRET_KEY in .env
+docker compose up --build -d
+```
+
+Open `http://localhost` (or `http://localhost:${APP_PORT}` if you changed `APP_PORT`). The SQLite database is persisted in the `backend_data` Docker volume. Put TLS termination in front of the `proxy` service, or extend `deploy/nginx.conf` with your certificate configuration.
+
 ## Administration and settlement
 
 Create an administrator with `.venv/bin/python manage.py createsuperuser`, then use http://localhost:8000/admin to add people and markets. Market resolution is available through `POST /api/markets/<id>/settle/` to a staff token with an `outcome_id` JSON body.
