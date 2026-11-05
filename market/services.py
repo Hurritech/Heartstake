@@ -9,13 +9,31 @@ from django.utils import timezone
 from .models import Bet, LedgerEntry, Market, Notification, Person, Profile, Relationship, Outcome
 
 
+def current_quarter_window(now=None):
+    now = now or timezone.now()
+    quarter = (now.month - 1) // 3
+    first_month_end = (now.replace(month=quarter * 3 + 2, day=1) - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=999999)
+    quarter_end = (now.replace(year=now.year + (quarter == 3), month=(quarter + 1) % 4 * 3 + 1, day=1) - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=999999)
+    return first_month_end, quarter_end
+
+
+def sync_timeframe_markets():
+    """Keep open quarterly markets aligned with the current calendar quarter."""
+    closes_at, resolves_at = current_quarter_window()
+    Market.objects.filter(mode=Market.Mode.TIMEFRAME, status=Market.Status.OPEN).exclude(
+        closes_at=closes_at, resolves_at=resolves_at
+    ).update(closes_at=closes_at, resolves_at=resolves_at)
+
+
 @transaction.atomic
 def place_bet(user, outcome, amount):
     amount = Decimal(str(amount)).quantize(Decimal('0.01'))
     if amount < Decimal('1.00'):
         raise ValueError('Minimum bet is 1 credit.')
     market = outcome.market
-    if market.status != Market.Status.OPEN or market.closes_at <= timezone.now():
+    now = timezone.now()
+    closes_at = current_quarter_window(now)[0] if market.mode == Market.Mode.TIMEFRAME and market.resolves_at else market.closes_at
+    if market.status != Market.Status.OPEN or closes_at <= now:
         raise ValueError('This market is closed.')
     profile = Profile.objects.select_for_update().get(user=user)
     if profile.person_id and outcome.people.filter(pk=profile.person_id).exists():
@@ -36,8 +54,9 @@ def resolve_market(market, winning_outcome):
         raise ValueError('Market is already resolved.')
     if winning_outcome.market_id != market.id:
         raise ValueError('Outcome does not belong to this market.')
+    resolves_at = current_quarter_window()[1] if market.mode == Market.Mode.TIMEFRAME and market.resolves_at else market.resolves_at
     if (market.mode == Market.Mode.TIMEFRAME and winning_outcome.label == 'AGAINST'
-            and (not market.resolves_at or timezone.now() < market.resolves_at)):
+            and (not resolves_at or timezone.now() < resolves_at)):
         raise ValueError('AGAINST cannot resolve before the observation window ends.')
     total_pool = Bet.objects.filter(outcome__market=market).aggregate(v=Sum('amount'))['v'] or Decimal('0')
     winning_pool = Bet.objects.filter(outcome=winning_outcome).aggregate(v=Sum('amount'))['v'] or Decimal('0')

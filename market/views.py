@@ -13,7 +13,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .auth import api_auth
 from .models import Bet, LedgerEntry, Market, Notification, Outcome, Person, Profile, Relationship
-from .services import place_bet, resolve_market, resolve_relationship_markets, sync_next_event_markets
+from .services import current_quarter_window, place_bet, resolve_market, resolve_relationship_markets, sync_next_event_markets
 
 
 def body(request):
@@ -28,6 +28,7 @@ def user_json(user):
 
 
 def market_json(market, user=None):
+    closes_at, resolves_at = current_quarter_window() if market.mode == Market.Mode.TIMEFRAME and market.resolves_at else (market.closes_at, market.resolves_at)
     pool = sum((o.pool or Decimal('0')) for o in market.outcomes.all())
     outcomes = []
     for outcome in market.outcomes.all():
@@ -41,8 +42,8 @@ def market_json(market, user=None):
         })
     return {
         'id': market.id, 'title': market.title, 'description': market.description,
-        'kind': market.kind, 'mode': market.mode, 'status': market.status, 'closes_at': market.closes_at.isoformat(),
-        'resolves_at': market.resolves_at.isoformat() if market.resolves_at else None,
+        'kind': market.kind, 'mode': market.mode, 'status': market.status, 'closes_at': closes_at.isoformat(),
+        'resolves_at': resolves_at.isoformat() if resolves_at else None,
         'pool': str(pool), 'outcomes': outcomes,
         'winning_outcome_id': market.winning_outcome_id,
     }

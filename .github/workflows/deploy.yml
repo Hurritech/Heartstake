@@ -1,0 +1,83 @@
+name: Deploy Heartstake
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Full 40-character commit SHA to deploy"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heartstake-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to sevenna
+    runs-on: ubuntu-latest
+    environment: DEPLOYMENT
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify release commit
+        env:
+          RELEASE_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid commit SHA"
+            exit 1
+          fi
+
+          git fetch origin master
+
+          if ! git merge-base --is-ancestor \
+            "$RELEASE_SHA" origin/master; then
+            echo "Commit is not on master"
+            exit 1
+          fi
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy release
+        env:
+          RELEASE_SHA: ${{ inputs.commit_sha }}
+        run: |
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            heartstake-deploy@91.210.224.148 \
+            "deploy $RELEASE_SHA"
+
+      - name: Display deployed version
+        env:
+          RELEASE_SHA: ${{ inputs.commit_sha }}
+        run: |
+          echo "Heartstake release: sha-$RELEASE_SHA"
+          echo "Website: https://heartstake.sevenna.de"
