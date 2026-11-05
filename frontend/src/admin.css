@@ -1,0 +1,39 @@
+.admin-list.users > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(145px, auto) repeat(4, auto);
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-list.users > div > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-list.users > div > span small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.admin-list.users button {
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.admin-list.users .danger-button {
+  border-color: #613144;
+  background: #27131b;
+  color: #f5a7ba;
+}
+
+@media (max-width: 520px) {
+  .admin-list.users > div {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-list.users > div > span {
+    grid-column: 1 / -1;
+  }
+}

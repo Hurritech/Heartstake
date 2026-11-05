@@ -1,0 +1,9 @@
+.dialog-body .market-dates {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #343c54;
+  border-radius: 8px;
+  background: #1a2030;
+  color: #c2baff;
+  font-size: 12px;
+}

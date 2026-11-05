@@ -1,0 +1,60 @@
+:root {
+  --bg: #081012;
+  --surface: #101a1d;
+  --surface-2: #172428;
+  --line: #2a3b3e;
+  --text: #edf7f5;
+  --muted: #9bb0ae;
+  --accent: #18c7b5;
+  --accent-2: #65e3d1;
+  --radius: 16px;
+}
+body { background: radial-gradient(circle at 80% 0, #123b3a55, transparent 36%), var(--bg); line-height: 1.5; }
+button, input, select { min-height: 44px; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline-color: #65e3d188; }
+.topbar { min-height: 76px; padding-inline: clamp(18px, 4vw, 42px); }
+.wordmark { min-height: 48px; font-size: 20px; }
+.user-tools > span, .user-tools > button { min-height: 44px; padding: 10px 14px; }
+aside { padding: 28px 18px; }
+aside nav button { min-height: 48px; padding: 13px 14px; }
+.dashboard { max-width: 1080px; padding: clamp(32px, 5vw, 64px) clamp(18px, 5vw, 52px) 96px; }
+.dashboard-head { margin-bottom: 34px; }
+.dashboard-head h1 { font-size: clamp(32px, 5vw, 46px); line-height: 1.1; }
+.category-board > header { padding: 28px 30px; }
+.category-board > header h2 { font-size: clamp(21px, 3vw, 25px); line-height: 1.2; }
+.category-options, .timeframe-options { padding: 14px 20px; }
+.category-options > button, .timeframe-summary { min-height: 76px; padding: 16px 14px; }
+.category-options strong, .timeframe-summary strong { font-size: 16px; }
+.category-options small, .timeframe-summary small { font-size: 12px; }
+.list-tools { padding: 18px 22px; }
+.list-tools input, .list-tools select, .pagination button, .quick button { min-height: 44px; }
+.binary-options { gap: 14px; padding: 8px 18px 20px; }
+.binary-options button { min-height: 116px; padding: 18px; }
+.submit { min-height: 48px; padding-inline: 20px; }
+.admin-card > header { padding: 22px 24px; }
+.admin-list { padding: 12px 18px; }
+.admin-list > div { min-height: 68px; padding: 12px 8px; }
+.admin-list button, .admin-list select { min-height: 42px; }
+.bet-dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
+.dialog-body { padding: clamp(24px, 5vw, 36px); }
+.confirm-dialog { width: min(460px, 100%); overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 30px 100px #000b; }
+.confirm-dialog > header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); font-weight: 750; }
+.confirm-dialog > header button { width: 40px; min-height: 40px; border: 0; border-radius: 9px; background: var(--surface-2); color: var(--text); font-size: 22px; }
+.confirm-dialog .dialog-body p { margin: 0; color: var(--muted); }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 0 22px 22px; }
+.confirm-actions button { min-width: 110px; }
+@media (max-width: 800px) {
+  .app-shell { grid-template-rows: 72px auto 44px; }
+  aside { padding: 10px 14px; }
+  aside nav button { min-height: 46px; }
+}
+@media (max-width: 520px) {
+  .dashboard { padding-inline: 14px; }
+  .dashboard-head { align-items: flex-start; flex-direction: column; }
+  .stat { width: 100%; text-align: left; }
+  .category-board > header { padding: 22px 20px; }
+  .category-options, .timeframe-options { padding-inline: 10px; }
+  .category-options > button, .timeframe-summary { min-height: 86px; padding-inline: 12px; }
+  .binary-options button { min-height: 104px; }
+  .app-footer { gap: 10px; padding-inline: 14px; font-size: 9px; }
+}
